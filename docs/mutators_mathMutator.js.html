@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>mutators/mathMutator.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.booleanLiteralsMutator">booleanLiteralsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.invertNegativesMutator">invertNegativesMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.negateConditionalsMutator">negateConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.numericLiteralsMutator">numericLiteralsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeArrayElementsMutator">removeArrayElementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeConditionalsMutator">removeConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeFuncCallArgsMutator">removeFuncCallArgsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeFuncDeclarationParamsMutator">removeFuncDeclarationParamsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeFunctionsMutator">removeFunctionsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeLinesMutator">removeLinesMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeObjPropsMutator">removeObjPropsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeSwitchCasesMutator">removeSwitchCasesMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.stringLiteralsMutator">stringLiteralsMutator</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">mutators/mathMutator.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const walk = require('babylon-walk')
+const debug = require('debug')('mutode:mathMutator')
+
+const mutantRunner = require('../mutantRunner')
+const lineDiff = require('../util/lineDiff')
+
+const operators = [
+  ['+', '-'],
+  ['-', '+'],
+  ['*', '/'],
+  ['/', '*'],
+  ['%', '*'],
+  ['&amp;', '|'],
+  ['|', '&amp;'],
+  ['^', '|'],
+  ['&lt;&lt;', '>>'],
+  ['>>', '&lt;&lt;'],
+  ['**', '*']
+]
+
+/**
+ * @description Mutates math and bitwise operators to their inverse. The modulus operator `%` and the exponential operator `**` are mutated to multiplication `*`.
+ * @function mathMutator
+ * @memberOf module:Mutators
+ */
+module.exports = async function mathMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+  debug('Running math mutator on %s', filePath)
+  walk.simple(ast, {
+    BinaryExpression (node) {
+      for (const pair of operators) {
+        if (node.operator !== pair[0] || node.left.loc.end - node.right.loc.start > 5) {
+          continue
+        }
+        const line = node.loc.start.line
+        const lineContent = lines[line - 1]
+
+        const mutantLineContent = lineContent.substr(0, node.left.loc.end.column) +
+          lineContent.substr(node.left.loc.end.column, node.right.loc.start.column - node.left.loc.end.column).replace(pair[0], pair[1]) +
+          lineContent.substr(node.right.loc.start.column)
+
+        const mutantId = ++mutodeInstance.mutants
+        const diff = lineDiff(lineContent, mutantLineContent)
+        const log = `MUTANT ${mutantId}:\tMM Line ${line}:\t${diff}`
+        debug(log)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tMM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
+        const linesCopy = lines.slice()
+        linesCopy[line - 1] = mutantLineContent
+        const contentToWrite = linesCopy.join('\n')
+        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+      }
+    }
+  })
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat May 26 2018 21:55:06 GMT-0500 (-05) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

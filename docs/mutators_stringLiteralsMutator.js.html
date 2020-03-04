@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>mutators/stringLiteralsMutator.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.booleanLiteralsMutator">booleanLiteralsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.invertNegativesMutator">invertNegativesMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.negateConditionalsMutator">negateConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.numericLiteralsMutator">numericLiteralsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeArrayElementsMutator">removeArrayElementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeConditionalsMutator">removeConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeFuncCallArgsMutator">removeFuncCallArgsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeFuncDeclarationParamsMutator">removeFuncDeclarationParamsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeFunctionsMutator">removeFunctionsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeLinesMutator">removeLinesMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeObjPropsMutator">removeObjPropsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeSwitchCasesMutator">removeSwitchCasesMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.stringLiteralsMutator">stringLiteralsMutator</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">mutators/stringLiteralsMutator.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const walk = require('babylon-walk')
+const debug = require('debug')('mutode:stringLiteralsMutator')
+
+const mutantRunner = require('../mutantRunner')
+const lineDiff = require('../util/lineDiff')
+
+/**
+ * @description Mutates string literals values.
+ * Strings are mutated to a random string, and to an empty string (if not previously empty).
+ * @function stringLiteralsMutator
+ * @memberOf module:Mutators
+ */
+module.exports = async function stringLiteralsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+  debug('Running string literals mutator on %s', filePath)
+
+  walk.ancestor(ast, {
+    StringLiteral (node, state, ancestors) {
+      const line = node.loc.start.line
+      const lineContent = lines[line - 1]
+
+      if (ancestors.length >= 2) {
+        const ancestor = ancestors[ancestors.length - 2]
+        if (ancestor.type &amp;&amp; ancestor.type === 'CallExpression' &amp;&amp; ancestor.callee) {
+          if (ancestor.callee.type === 'MemberExpression' &amp;&amp; ancestor.callee.object.name === 'console') return
+          if (ancestor.callee.name) {
+            switch (ancestor.callee.name) {
+              case 'require':
+              case 'debug':
+                return
+              default:
+                break
+            }
+          }
+        }
+      }
+
+      if (node.value.length !== 0) {
+        const mutantLineContent = lineContent.substr(0, node.loc.start.column) +
+          node.extra.raw.replace(node.value, '') +
+          lineContent.substr(node.loc.end.column)
+
+        const mutantId = ++mutodeInstance.mutants
+        const diff = lineDiff(lineContent, mutantLineContent)
+        const log = `MUTANT ${mutantId}:\tSLM Line ${line}:\t${diff}...`
+        debug(log)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tSLM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
+        const linesCopy = lines.slice()
+        linesCopy[line - 1] = mutantLineContent
+        const contentToWrite = linesCopy.join('\n')
+        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+      }
+
+      const newValue = `'${randomString(node.value.length || 10)}'`
+      const mutantLineContent = lineContent.substr(0, node.loc.start.column) +
+        newValue +
+        lineContent.substr(node.loc.end.column)
+
+      const mutantId = ++mutodeInstance.mutants
+      const diff = lineDiff(lineContent, mutantLineContent)
+      const log = `MUTANT ${mutantId}:\tSLM Line ${line}:\t${diff}...`
+      debug(log)
+      mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tSLM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
+      const linesCopy = lines.slice()
+      linesCopy[line - 1] = mutantLineContent
+      const contentToWrite = linesCopy.join('\n')
+      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+    }
+  })
+}
+
+function randomString (length) {
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
+  let randomstring = ''
+  for (let i = 0; i &lt; length; i++) {
+    const ind = Math.floor(Math.random() * chars.length)
+    randomstring += chars.charAt(ind)
+  }
+  return randomstring
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat May 26 2018 21:55:06 GMT-0500 (-05) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
