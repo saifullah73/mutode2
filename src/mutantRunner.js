@@ -13,7 +13,7 @@ const terminate = require('terminate')
  */
 module.exports = function MutantRunner ({ mutodeInstance, filePath, contentToWrite, log}) {
   const debug = Debug(`mutants:${filePath}`);
-  var failedTestCasesNumber = 1;  // 1 since first test case that fails is numbered 1, so we are also trying to match that
+  var failedTestCasesNumber = 1;  // 1 since first test case that fails is numbered from 1, so we are also trying to match that
   var testCaseReport = [];
   var testCaseNo = 0;
   var seperator = "|"
@@ -23,19 +23,18 @@ module.exports = function MutantRunner ({ mutodeInstance, filePath, contentToWri
     this.status = stat; //1: Pass , 0: fail, -2: No test case run due to compilation source code, -1: Test case did not run,since an earlier one failed 
   }
 
+
   function writeRow(id,time,header,testcaseresults, filePath){
     var headersplit = header.split(seperator)
-    headersplit = headersplit.slice(1);
+    headersplit = headersplit.slice(2);
     var totalTestCases = headersplit.length;
-    console.log(totalTestCases)
-    console.log(`${chalk.bgYellow("Total length of totalTestCases = " + totalTestCases)}`);
     var string = getStringToWrite(id,time,testcaseresults,totalTestCases,seperator);
     console.log(`${chalk.bgYellow("Row written = "+ string)}`);
     fs.appendFileSync(filePath, string+"\n");
   }
 
   function getStringToWrite(id,time,testResults,testCasesLength,sep){
-    var str = id+sep+time;
+    var str = id+sep+time+"ms";
     console.log(`${chalk.bgYellow("length of testcaseresults = "+ testResults.length + " totalTestCases = " + testCasesLength)}`);
     if (testResults.length == 0){
       console.log(`${chalk.bgYellow("Length of totalTestCases = 0 mutode:id = "+id)}`)
@@ -109,20 +108,22 @@ module.exports = function MutantRunner ({ mutodeInstance, filePath, contentToWri
         const endTime = process.hrtime(startTime)
         const endTimeMS = (endTime[0] * 1e3 + endTime[1] / 1e6).toFixed(0)
         const timeDiff = chalk.gray(`${endTimeMS} ms`)
+        var patt = new RegExp("MUTANT [0-9]+" ,"i");
+        var id = log.match(patt);
         clearTimeout(timeout)
         if (code === 0) {
           console.log(`${log}\t${chalk.bgRed('survived')} ${timeDiff}`)
           mutodeInstance.survived++
+          writeOutput(testCaseReport,id,endTimeMS,`.mutode/output-${mutodeInstance.id}.csv`);
         } else if (signal || timedout) {
           console.log(`${log}\t${chalk.bgBlue('discarded (timeout)')} ${timeDiff}`)
           mutodeInstance.discarded++
+          //do not write output in case of discarded mutatations
         } else {
           console.log(`${log}\t${chalk.bgGreen('killed')} ${timeDiff}`)
           mutodeInstance.killed++
+          writeOutput(testCaseReport,id,endTimeMS,`.mutode/output-${mutodeInstance.id}.csv`);
         }
-        var patt = new RegExp("MUTANT [0-9]+" ,"i");
-        var id = log.match(patt);
-        writeOutput(testCaseReport,id,timeDiff,`.mutode/output-${mutodeInstance.id}.csv`);
         resolve()
       });
 

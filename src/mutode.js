@@ -259,9 +259,10 @@ class Mutode {
       child.on('exit', code => {
         if (code !== 0) return reject(new Error('Test suite must exit with code 0 with no mutants for Mutode to continue'))
         const diff = +new Date() - start
-      /*changed here, 60000 instead of 10000 $$new
+      /*changed here, 50000 instead of 10000 $$new
       */
-        const timeout = Math.min(Math.ceil(diff / 1000) * this.concurrency * 1000, 10000)
+        // const timeout = Math.max(Math.ceil(diff / 1000) * this.concurrency * 1000, 50000)
+        const timeout = Math.min(Math.ceil(diff / 1000) * this.concurrency * 1000, 50000)
         console.log(`Took ${(diff / 1000).toFixed(2)} seconds to run full test suite\n`)
         fs.writeFileSync(`.mutode/output-${this.id}.csv`,header+"\n")
         resolve(timeout)
