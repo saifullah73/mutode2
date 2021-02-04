@@ -4,13 +4,13 @@ Please read the original Mutode Readme first [here](https://github.com/TheSoftwa
 **Requires Node 8+**
 
 ## Install
-The mutode2 package is not published to npm, and thus requires a manual upload
+The mutode2 package is not published to npm, and thus requires a manual install
 1. Download/Clone this repo
 2. Navitage to the repo and run 
 ```
 npm install
 ```
-3. Naviagate on step up (i.e to the directory containing the mutode2 repo)
+3. Naviagate one step up (i.e to the directory containing the mutode2 repo)
 4. Run the following command to install mutode2 from source globally
 ```
 npm install -g <mutode2 directory name>
